@@ -1,11 +1,3 @@
-mkrspc.se - URL shortener.
----
-
-Ja, pretty much precis vad det är.
-Varken mer eller mindre.
-
-Baserat på Bootstrap3, Idiorm, och Base62-encode (Se licens och ursprunlig header i base62-encode.php)
-
 /*
  * ----------------------------------------------------------------------------
  * "THE BEER-WARE LICENSE" (Revision 42):
@@ -14,4 +6,3 @@ Baserat på Bootstrap3, Idiorm, och Base62-encode (Se licens och ursprunlig head
  * this stuff is worth it, you can buy me a beer in return. - Jim Nelin
  * ----------------------------------------------------------------------------
  */
-

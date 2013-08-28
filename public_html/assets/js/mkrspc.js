@@ -8,7 +8,7 @@ $(function() {
 		
 		$.post("s", { "url": url })
 			.done(function(data) {
-				$("#result").html('Länk: ' + data);
+				$("#result").html('Förkortad länk: <a href="' + data + '">' + data + '</a>');
 			})
 			.fail(function(data) {
 				$("#result").html('<i>Kunde inte skapa en kortare URL - kontrollera att du fyllde i en korrekt URL</i>');

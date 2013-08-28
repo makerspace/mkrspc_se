@@ -1,9 +1,20 @@
 <?php
+/*
+ * ----------------------------------------------------------------------------
+ * "THE BEER-WARE LICENSE" (Revision 42):
+ * <jim@jine.se> wrote this file. As long as you retain this notice you
+ * can do whatever you want with this stuff. If we meet some day, and you think
+ * this stuff is worth it, you can buy me a beer in return. - Jim Nelin
+ * ----------------------------------------------------------------------------
+ */
+
+// Include base62-lib
+require_once 'base62-encode.php';
 
 // Include a stupid-simple ORM cause I'm lazy.
 require_once 'idiorm.php';
 
-// ... and configure it
+// ... and configure idiorm.
 ORM::configure('mysql:host=mysql.makerspace.se;dbname=mkrspc_se');
 ORM::configure('username', 'mkrspc_se');
 ORM::configure('password', '');
@@ -11,44 +22,71 @@ ORM::configure('password', '');
 /**
  * Super simple URL-router
  */
-
 if($_SERVER['REQUEST_URI'] == '/') {
 
 	// Do nothing, this is the front-page
 
 } elseif ($_SERVER['REQUEST_URI'] == '/s') {
 
-	if(empty($_POST['url']) || filter_var($_POST['url'], FILTER_VALIDATE_URL) === false) {
+	// Trim URL to avoid whitespaces etc.
+	$url = trim($_POST['url']);
+
+	if(empty($url) || filter_var($url, FILTER_VALIDATE_URL) === false) {
 		// return 400 if empty or invalid url
 		http_response_code(400);
 	}
 
 	// Make short-link
-	$url = 'http://mkrspc.se/'; // Initial URL-part
+	$result = 'http://mkrspc.se/'; // Initial URL-part
 
 	// First search if we already have a record of this url
-	$urlobj = ORM::for_table('urls')->where('url', $_POST['url'])->find_one();	
+	$urlobj = ORM::for_table('urls')->where('url', $url)->find_one();	
 
 	// Check if we found something...
-	if($urlobj) {
-		// Output previous record
-		var_dump($urlobj);		
-	
-	} else {
-		// Create new record
+	if(!$urlobj) {
+
+		// No - create new record
 		$urlobj = ORM::for_table('urls')->create();
-		$urlobj->url = $_POST['url'];
+		$urlobj->url = $url;
 		$urlobj->ip = $_SERVER['REMOTE_ADDR'];
 		$urlobj->created = time();
 		$urlobj->save();
 
-		var_dump($urlobj);		
 	}
 
-	#echo $url;		
+	// Create base62-number from the database id.
+	$result .= Base62::convert($urlobj->id);
+
+	// Return it.
+	echo $result;
 
 	exit;
 
 } else {
-	// Look for short url in db, or 404
+
+	// Failsafe
+	if(!strlen($_SERVER['REQUEST_URI']) > 1) {
+		header('Location: /');
+	}
+
+	// Get the base62-id from url
+	$urlid = substr($_SERVER['REQUEST_URI'], 1);
+	$id = Base62::convert($urlid, 62, 10);
+
+	// Another failsafe
+	if(!is_int($id)) {
+		header('Location: /');
+	}
+	
+	// Get ID from db
+	$urlobj = ORM::for_table('urls')->where('id', $id)->find_one();
+
+	if($urlobj) {
+		// Redirect to "real" url
+		header('Location: '.$urlobj->url);
+		exit;
+	}
+
+	// Or just redirect to front page
+	header('Location: /');
 }
