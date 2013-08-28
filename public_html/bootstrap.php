@@ -18,7 +18,7 @@ if($_SERVER['REQUEST_URI'] == '/') {
 
 } elseif ($_SERVER['REQUEST_URI'] == '/s') {
 
-	if(empty($_POST['url']) || filter_var($_POST['url'], FILTER_VALIDATE_URL)) {
+	if(empty($_POST['url']) || filter_var($_POST['url'], FILTER_VALIDATE_URL) === false) {
 		// return 400 if empty or invalid url
 		http_response_code(400);
 	}
