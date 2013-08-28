@@ -82,6 +82,18 @@ if($_SERVER['REQUEST_URI'] == '/') {
 	$urlobj = ORM::for_table('urls')->where('id', $id)->find_one();
 
 	if($urlobj) {
+
+		// Increment visits
+		$urlobj->set_expr('visits', 'visits + 1');
+		$urlobj->save();
+
+		// Log this request
+		$log = ORM::for_table('log')->create();
+		$log->url_id = $urlobj->id;
+		$log->ip = $_SERVER['REMOTE_ADDR'];
+		$log->timestamp = time();
+		$log->save();
+	
 		// Redirect to "real" url
 		header('Location: '.$urlobj->url);
 		exit;
